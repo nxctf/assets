@@ -1,0 +1,29 @@
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch and save leaderboard
+        run: |
+          mkdir -p dist
+          curl -s -H "stream-key: fcba1f4a75626dce876aee93192cde00" \
+            https://backend.saweria.co/widgets/leaderboard/all \
+            -o dist/leaderboard.json
+      - name: Push to leaderboard branch
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: leaderboard
+          build_dir: dist
+          commit_message: "sync: update leaderboard"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
